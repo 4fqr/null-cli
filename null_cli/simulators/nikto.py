@@ -32,18 +32,61 @@ class NiktoSimulator(ToolSimulator):
             return
         
         if self.educational:
-            self._show_educational_info(
-                "Nikto Web Server Scanner",
-                "Nikto scans web servers for known vulnerabilities, misconfigurations, "
-                "dangerous files/CGIs, outdated server software, and security issues. "
-                "It checks against a database of 6700+ items.",
-                "[bold red]Real Nikto scans would:[/bold red]\n"
-                "• Generate extensive web server logs\n"
-                "• Trigger Web Application Firewalls (WAFs)\n"
-                "• Be detected by intrusion detection systems\n"
-                "• May cause false positives in vulnerability scanners\n"
-                "• Require authorization from system owner"
-            )
+            description = "[bold]Nikto[/bold] - Open-source web server scanner with 6700+ vulnerability checks.\n\n"
+            description += "[bold cyan]What Nikto Scans:[/bold cyan]\n"
+            description += "[bold]Server Misconfigurations:[/bold]\n"
+            description += "  • Default files (phpinfo.php, test.php, admin.html)\n"
+            description += "  • Backup files (.bak, .old, ~, .swp)\n"
+            description += "  • Exposed directories (.git, .svn, /admin, /backup)\n"
+            description += "  • Directory listing enabled\n"
+            description += "[bold]Outdated Software:[/bold]\n"
+            description += "  • Apache 2.2.x vulnerabilities\n"
+            description += "  • Old PHP versions with known exploits\n"
+            description += "  • Vulnerable CMS versions (WordPress, Joomla)\n"
+            description += "[bold]Security Headers:[/bold]\n"
+            description += "  • Missing X-Frame-Options (clickjacking risk)\n"
+            description += "  • No X-XSS-Protection\n"
+            description += "  • Missing Content-Security-Policy\n"
+            description += "  • HTTP Strict-Transport-Security absent\n"
+            description += "[bold]Dangerous CGI/Scripts:[/bold]\n"
+            description += "  • /cgi-bin/ scripts with known vulnerabilities\n"
+            description += "  • Shell scripts, file upload forms\n\n"
+            description += "[bold cyan]Key Nikto Flags:[/bold cyan]\n"
+            description += f"[bold]-host:[/bold] Target hostname/IP - Required\n"
+            description += f"[bold]-port {config['port']}:[/bold] Target port (80=HTTP, 443=HTTPS)\n"
+            description += "[bold]-ssl:[/bold] Force SSL/TLS mode\n"
+            description += "[bold]-Tuning X:[/bold] Scan categories:\n"
+            description += "  • 1: Interesting files\n"
+            description += "  • 2: Misconfiguration\n"
+            description += "  • 3: Information disclosure\n"
+            description += "  • 4: Injection (XSS/Script/HTML)\n"
+            description += "  • 5: Remote file retrieval\n"
+            description += "  • 6: Denial of Service\n"
+            description += "  • 9: SQL injection\n"
+            description += "  • x: Reverse tuning (exclude)\n"
+            description += "[bold]-evasion:[/bold] IDS evasion techniques (random URI encoding, fake params)\n"
+            description += "[bold]-Format:[/bold] Output: txt, html, csv, xml\n"
+            description += "[bold]-useragent:[/bold] Custom User-Agent string\n"
+            description += "[bold]-Display:[/bold] Output verbosity (1=errors, 2=cookies, 3=200 OK, 4=URLs, V=verbose)"
+            
+            impact = "[bold red]Real Nikto Scans:[/bold red]\n" \
+                    "• [red]Extremely Noisy:[/red] Generates 1000s of requests in minutes. WAF instant detection.\n" \
+                    "• [red]Logged Extensively:[/red] Every 404, every URL tried, your IP, User-Agent, timestamp.\n" \
+                    "• [yellow]Triggers Alerts:[/yellow] IDS/IPS (Snort, Suricata) have Nikto signatures. Instant SOC notification.\n" \
+                    "• [yellow]Slowness:[/yellow] Single-threaded by default. Full scan takes 10-30 minutes.\n" \
+                    "• [yellow]False Positives:[/yellow] Reports many 'potential' vulnerabilities requiring manual verification.\n" \
+                    "• [red]Legal:[/red] Unauthorized scanning = Computer Fraud and Abuse Act violation.\n\n" \
+                    "[bold green]Defenses:[/bold green]\n" \
+                    "• [green]WAF/ModSecurity:[/green] Blocks Nikto's signature User-Agent and scan patterns.\n" \
+                    "• [green]Remove Defaults:[/green] Delete phpinfo.php, test files, default admin panels.\n" \
+                    "• [green]Disable Directory Listing:[/green] Options -Indexes in Apache.\n" \
+                    "• [green]Security Headers:[/green] Add X-Frame-Options, CSP, HSTS headers.\n" \
+                    "• [green]Rate Limiting:[/green] Block IPs making 100+ requests/minute.\n" \
+                    "• [green]Hide Server Version:[/green] ServerTokens Prod, Server: nginx (no version)\n\n" \
+                    "[bold cyan]Better Alternatives:[/bold cyan] OWASP ZAP, Burp Suite (more thorough, less noisy), Acunetix (commercial).\n" \
+                    "[bold cyan]Ethical Use:[/bold cyan] Bug bounties (with permission), your own servers, authorized pentests, CTF labs."
+            
+            self._show_educational_info("Nikto Web Vulnerability Scanner", description, impact)
         
         self._log_simulation(' '.join(args))
         self._simulate_scan(config)

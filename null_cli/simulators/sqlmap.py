@@ -72,31 +72,92 @@ class SqlmapSimulator(ToolSimulator):
     
     def _show_sqlmap_education(self, config: Dict):
         """Educational information about SQLmap"""
-        description = "SQLmap automates detection and exploitation of SQL injection " \
-                     "vulnerabilities in web applications. It:\n\n" \
-                     "• Tests parameters for SQL injection flaws\n" \
-                     "• Identifies database type and version\n" \
-                     "• Extracts database contents\n" \
-                     "• Can read/write files on vulnerable servers\n" \
-                     "• Supports many injection techniques and database systems\n\n" \
-                     f"Testing level {config['level']}, risk {config['risk']}"
+        description_parts = []
         
-        impact = "[bold red]Real SQLmap exploitation would:[/bold red]\n" \
-                "• Extract entire database contents (user data, passwords)\n" \
-                "• Potentially gain shell access to server\n" \
-                "• Read sensitive files (/etc/passwd, config files)\n" \
-                "• Modify or delete database data\n" \
-                "• Be logged extensively in web server logs\n" \
-                "• Trigger Web Application Firewalls (WAF)\n" \
-                "• Constitute unauthorized access (criminal offense)\n\n" \
-                "[bold yellow]Defense:[/bold yellow]\n" \
-                "• Use parameterized queries/prepared statements\n" \
-                "• Input validation and sanitization\n" \
-                "• Principle of least privilege for DB accounts\n" \
-                "• Web Application Firewall (WAF)\n" \
-                "• Regular security testing and code reviews"
+        description_parts.append("[bold]SQLmap[/bold] - Automated SQL injection detection and exploitation tool.\n\n")
         
-        self._show_educational_info("SQLmap SQL Injection Testing", description, impact)
+        # Basic flags
+        description_parts.append("[bold]-u/--url:[/bold] Target URL with injectable parameter.")
+        description_parts.append("\n  • Example: -u 'http://site.com/page.php?id=1'")
+        description_parts.append("\n  • Tests GET parameters automatically")
+        
+        if config['data']:
+            description_parts.append("\n[bold]--data:[/bold] POST data for testing POST parameters.")
+            description_parts.append("\n  • Example: --data 'username=admin&password=test'")
+            description_parts.append("\n  • Tests form submissions and POST requests")
+        
+        # Level and Risk
+        description_parts.append(f"\n\n[bold]--level {config['level']} (Detection Depth):[/bold]")
+        description_parts.append("\n  • Level 1: Basic GET parameters only")
+        description_parts.append("\n  • Level 2: Adds HTTP Cookie headers")
+        description_parts.append("\n  • Level 3: Adds User-Agent, Referer headers")
+        description_parts.append("\n  • Level 4-5: Exhaustive tests (very slow, many requests)")
+        
+        description_parts.append(f"\n[bold]--risk {config['risk']} (Attack Risk):[/bold]")
+        description_parts.append("\n  • Risk 1: Safe queries (no OR-based, no time-based)")
+        description_parts.append("\n  • Risk 2: Heavy queries (time-delays, OR-based)")
+        description_parts.append("\n  • Risk 3: OR-based (may UPDATE/DELETE data!)")
+        
+        # Injection techniques
+        description_parts.append("\n\n[bold cyan]SQL Injection Techniques:[/bold cyan]")
+        description_parts.append("\n[bold]Boolean-based blind:[/bold] Uses AND/OR to infer true/false. Slow but stealthy.")
+        description_parts.append("\n  • id=1 AND 1=1 (true) vs id=1 AND 1=2 (false)")
+        description_parts.append("\n[bold]Time-based blind:[/bold] Uses SLEEP() to detect injection via response delay.")
+        description_parts.append("\n  • id=1 AND SLEEP(5) - if 5-sec delay, vulnerable")
+        description_parts.append("\n[bold]Error-based:[/bold] Forces database errors to leak info.")
+        description_parts.append("\n  • MySQL errors reveal version, table names")
+        description_parts.append("\n[bold]UNION query:[/bold] Fastest. Appends SELECT to retrieve data directly.")
+        description_parts.append("\n  • id=1 UNION SELECT username,password FROM users")
+        description_parts.append("\n[bold]Stacked queries:[/bold] Multiple statements. Can INSERT/UPDATE/DELETE.")
+        description_parts.append("\n  • id=1; DROP TABLE users-- (Risk 3 only)")
+        
+        # Enumeration flags
+        description_parts.append("\n\n[bold cyan]Data Extraction:[/bold cyan]")
+        if config['dbs']:
+            description_parts.append("\n[bold]--dbs:[/bold] Enumerate all database names.")
+        if config['tables']:
+            description_parts.append("\n[bold]--tables:[/bold] List tables in database.")
+        if config['dump']:
+            description_parts.append("\n[bold]--dump:[/bold] Extract all table contents. Can retrieve thousands of records.")
+        
+        description_parts.append("\n[bold]-D <db> -T <table> -C <col>:[/bold] Target specific database/table/columns.")
+        description_parts.append("\n[bold]--dump-all:[/bold] Dump ENTIRE database server. Extremely noisy.")
+        
+        # Other useful flags
+        description_parts.append("\n\n[bold cyan]Additional Options:[/bold cyan]")
+        description_parts.append("\n[bold]--batch:[/bold] Non-interactive mode. Uses default answers (essential for automation).")
+        description_parts.append("\n[bold]--random-agent:[/bold] Use random User-Agent to evade detection.")
+        description_parts.append("\n[bold]--tamper:[/bold] Apply evasion scripts (space2comment, between, etc) to bypass WAF.")
+        description_parts.append("\n[bold]--technique=[/bold] Specify techniques: B(oolean), E(rror), U(nion), S(tacked), T(ime), Q(uery).")
+        description_parts.append("\n[bold]--threads=N:[/bold] Parallel requests. Faster but noisier.")
+        description_parts.append("\n[bold]--os-shell:[/bold] Attempt interactive OS shell via SQL injection.")
+        description_parts.append("\n[bold]--file-read:[/bold] Read files from server (/etc/passwd, config.php).")
+        
+        # Supported DBMS
+        description_parts.append("\n\n[bold]Supported Databases:[/bold] MySQL, PostgreSQL, Oracle, MSSQL, SQLite, MongoDB, Access, Sybase, DB2, Firebird, SAP MaxDB, Informix, etc.")
+        
+        full_description = ''.join(description_parts)
+        
+        impact = "[bold red]Real SQLmap Exploitation:[/bold red]\n" \
+                "• [red]Data Breach:[/red] Extract entire databases - usernames, passwords, SSNs, credit cards, emails.\n" \
+                "• [red]Privilege Escalation:[/red] Read config files with DB admin passwords, AWS keys, API tokens.\n" \
+                "• [red]Remote Code Execution:[/red] --os-shell can upload webshells, execute system commands.\n" \
+                "• [red]Data Modification:[/red] Risk 3 attacks can UPDATE/DELETE records, drop tables.\n" \
+                "• [yellow]Detection:[/yellow] WAFs (ModSecurity, Cloudflare) detect SQLmap signatures. Generates 100-1000s requests.\n" \
+                "• [yellow]Logging:[/yellow] Every request logged with IP, timestamp, payload. Forensic evidence.\n" \
+                "• [red]Legal:[/red] Unauthorized SQL injection = Computer Fraud and Abuse Act violation. Federal felony.\n\n" \
+                "[bold green]Defenses (Priority Order):[/bold green]\n" \
+                "1. [green]Parameterized Queries/Prepared Statements:[/green] 100% prevents SQLi. Use ALWAYS.\n" \
+                "   • Bad: SELECT * FROM users WHERE id = '$id'\n" \
+                "   • Good: SELECT * FROM users WHERE id = ?\n" \
+                "2. [green]ORM Frameworks:[/green] SQLAlchemy, Hibernate, Entity Framework - built-in protection.\n" \
+                "3. [green]Input Validation:[/green] Whitelist allowed characters, validate data types.\n" \
+                "4. [green]Least Privilege:[/green] DB user should only have SELECT on needed tables, no DROP/CREATE.\n" \
+                "5. [green]WAF:[/green] ModSecurity, Cloudflare - blocks common SQLi patterns.\n" \
+                "6. [green]Error Suppression:[/green] Don't display DB errors to users - log them server-side.\n\n" \
+                "[bold cyan]Ethical Use:[/bold cyan] Bug bounties (with scope), authorized pentests, your own apps, CTFs, educational labs."
+        
+        self._show_educational_info("SQLmap SQL Injection Tool", full_description, impact)
     
     def _simulate_injection_test(self, config: Dict):
         """Simulate SQL injection testing"""

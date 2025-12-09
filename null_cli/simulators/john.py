@@ -62,27 +62,74 @@ class JohnSimulator(ToolSimulator):
     
     def _show_john_education(self, config: Dict):
         """Educational information about John the Ripper"""
-        description = "John the Ripper is a password cracking tool that uses various " \
-                     "techniques to crack password hashes:\n\n" \
-                     "• Dictionary attack: Tests passwords from wordlists\n" \
-                     "• Brute-force: Tries all possible character combinations\n" \
-                     "• Rules: Applies mutations to dictionary words (l33t speak, etc.)\n" \
-                     "• Single crack: Uses username/GECOS information\n\n" \
-                     "Supports many hash types: MD5, SHA, bcrypt, NTLM, and hundreds more."
+        description_parts = []
         
-        impact = "[bold red]Real John attacks would:[/bold red]\n" \
-                "• Require possession of stolen password hashes (from breach)\n" \
-                "• Consume massive CPU/GPU resources\n" \
-                "• Run for days/weeks/months depending on hash strength\n" \
-                "• Reveal weak passwords in minutes to hours\n" \
-                "• Strong passwords (12+ chars, complex) may never be cracked\n\n" \
-                "[bold yellow]Defense:[/bold yellow]\n" \
-                "• Use strong, unique passwords (14+ characters)\n" \
-                "• Enable multi-factor authentication\n" \
-                "• Use modern hash algorithms (bcrypt, Argon2)\n" \
-                "• Implement password complexity requirements"
+        description_parts.append("[bold]John the Ripper[/bold] - Fast password cracker supporting 400+ hash types and multiple attack modes.\n\n")
         
-        self._show_educational_info("John the Ripper Hash Cracking", description, impact)
+        # Attack modes based on config
+        description_parts.append("[bold cyan]Attack Modes:[/bold cyan]")
+        
+        if config['wordlist']:
+            description_parts.append("\n[bold]--wordlist (Dictionary Attack):[/bold] Tests passwords from file line-by-line. Fast and effective.")
+            description_parts.append("\n  • [cyan]rockyou.txt:[/cyan] 14M passwords from breaches. Cracks 30-40% of weak hashes.")
+            description_parts.append("\n  • [cyan]Custom wordlists:[/cyan] Company names, dates, common phrases.")
+            description_parts.append("\n  • [cyan]Speed:[/cyan] Millions of passwords/sec for fast hashes (MD5), thousands/sec for slow (bcrypt).")
+        
+        if config['rules']:
+            description_parts.append("\n[bold]--rules:[/bold] Apply mutations to wordlist entries. Dramatically increases effectiveness.")
+            description_parts.append("\n  • Append numbers: password → password123")
+            description_parts.append("\n  • Capitalize: password → Password, PASSWORD")
+            description_parts.append("\n  • L33t speak: password → p@ssw0rd")
+            description_parts.append("\n  • Common patterns: password → password!, Password1")
+        
+        if config['incremental']:
+            description_parts.append("\n[bold]--incremental (Brute-Force):[/bold] Tries all possible character combinations.")
+            description_parts.append("\n  • Extremely thorough but SLOW. Starts with 'a', ends with 'zzzzzzzzz...'")
+            description_parts.append("\n  • 8-char password (lowercase+numbers): ~36^8 = 2.8 trillion combinations")
+            description_parts.append("\n  • At 1M/sec: 32 days. At 1B/sec (GPU): 46 minutes.")
+        
+        if config['single']:
+            description_parts.append("\n[bold]--single:[/bold] Uses username/GECOS info from passwd file.")
+            description_parts.append("\n  • Fast pre-attack. Finds users who use their username as password.")
+            description_parts.append("\n  • Tries username, reversed, with numbers, capitalized.")
+        
+        if config['show']:
+            description_parts.append("\n[bold]--show:[/bold] Display previously cracked passwords from john.pot file.")
+        
+        # Hash formats
+        description_parts.append("\n\n[bold]--format <type>:[/bold] Specify hash algorithm:")
+        description_parts.append("\n  • [cyan]md5/md5crypt:[/cyan] Old Unix. Very fast - billions/sec with GPU.")
+        description_parts.append("\n  • [cyan]sha256/sha512:[/cyan] Modern Unix/Linux. Faster than md5crypt.")
+        description_parts.append("\n  • [cyan]bcrypt:[/cyan] Designed to be slow. ~1000-10000 hashes/sec. Strong defense.")
+        description_parts.append("\n  • [cyan]NT (NTLM):[/cyan] Windows hashes. Fast to crack. Common target.")
+        description_parts.append("\n  • [cyan]Raw-MD5/SHA1:[/cyan] Unsalted. Pre-computed rainbow tables exist.")
+        description_parts.append("\n  • [cyan]descrypt:[/cyan] Ancient DES-based Unix. Trivially crackable.")
+        
+        description_parts.append("\n\n[bold cyan]Additional Options:[/bold cyan]")
+        description_parts.append("\n[bold]--fork=N:[/bold] Multi-processing across N CPU cores.")
+        description_parts.append("\n[bold]--session=NAME:[/bold] Save/restore session. Resume interrupted cracks.")
+        description_parts.append("\n[bold]--pot=FILE:[/bold] Custom cracked password storage file.")
+        
+        full_description = ''.join(description_parts)
+        
+        impact = "[bold red]Real John the Ripper Attacks:[/bold red]\n" \
+                "• [red]Require Stolen Hashes:[/red] Must extract from /etc/shadow, SAM file, database dump. Usually requires prior breach.\n" \
+                "• [red]Massive Resource Consumption:[/red] Maxes out CPU/GPU for hours/days/weeks. Electricity costs can exceed $100s.\n" \
+                "• [red]Success Rate Varies:[/red]\n" \
+                "  - Weak passwords (password123, qwerty): Minutes\n" \
+                "  - Common passwords with rules: Hours to days\n" \
+                "  - Strong passwords (14+ random chars): Months to never\n" \
+                "  - Bcrypt/Argon2 with strong password: Practically uncrackable\n" \
+                "• [yellow]Legal Status:[/yellow] Possessing stolen hashes = crime. Cracking without authorization = unauthorized access.\n\n" \
+                "[bold green]Defenses:[/bold green]\n" \
+                "• [green]Strong Passwords:[/green] 14+ characters, random, unique per site. Use password manager.\n" \
+                "• [green]Modern Hash Algorithms:[/green] bcrypt, scrypt, Argon2 with high cost factor. Avoid MD5, SHA1, plain SHA256.\n" \
+                "• [green]Salting:[/green] Unique salt per password prevents rainbow table attacks.\n" \
+                "• [green]Multi-Factor Auth (MFA):[/green] Even if password cracked, can't login without 2nd factor.\n" \
+                "• [green]Monitoring:[/green] Detect hash file access, unusual CPU spikes.\n\n" \
+                "[bold cyan]Legitimate Uses:[/bold cyan] Password audits (authorized), forensics, your own hash cracking, CTFs."
+        
+        self._show_educational_info("John the Ripper Password Cracker", full_description, impact)
     
     def _simulate_cracking(self, config: Dict):
         """Simulate password cracking"""

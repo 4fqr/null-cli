@@ -32,22 +32,70 @@ class WPScanSimulator(ToolSimulator):
             return
         
         if self.educational:
-            self._show_educational_info(
-                "WPScan WordPress Security Scanner",
-                "WPScan is a WordPress vulnerability scanner that identifies:\n"
-                "• WordPress version and known vulnerabilities\n"
-                "• Installed plugins and themes with CVEs\n"
-                "• User enumeration\n"
-                "• Weak passwords through brute-force\n"
-                "• Security misconfigurations",
-                "[bold red]Real WPScan would:[/bold red]\n"
-                "• Query WordPress.org vulnerability database\n"
-                "• Enumerate users (author IDs visible)\n"
-                "• Test for known plugin vulnerabilities\n"
-                "• Generate extensive logs on target server\n"
-                "• May trigger security plugins (Wordfence, etc.)\n"
-                "• Require permission from site owner"
-            )
+            description = "[bold]WPScan[/bold] - Black box WordPress security scanner. 30% of internet runs WordPress = huge attack surface.\n\n"
+            description += "[bold cyan]What WPScan Detects:[/bold cyan]\n"
+            description += "[bold]WordPress Version:[/bold] Identifies version from meta tags, readme.html, RSS feed.\n"
+            description += "  • Old versions have known CVEs (remote code execution, XSS, SQLi)\n"
+            description += "  • WP 5.8.0 has 23 known vulnerabilities\n"
+            description += "[bold]Theme Detection:[/bold] Identifies active theme and version.\n"
+            description += "  • Many themes have vulnerabilities (file upload, XSS)\n"
+            description += "[bold]Plugin Enumeration:[/bold] Discovers installed plugins (aggressive or passive).\n"
+            description += "  • 90% of WordPress hacks exploit plugin vulnerabilities\n"
+            description += "  • Common targets: Contact Form 7, Elementor, Yoast SEO\n"
+            description += "[bold]User Enumeration:[/bold] Finds usernames via author archives, REST API, login errors.\n"
+            description += "  • Usernames enable targeted brute-force attacks\n"
+            description += "[bold]Config Backups:[/bold] Checks for wp-config.php~, .git, debug.log\n"
+            description += "  • wp-config.php contains database credentials\n\n"
+            description += "[bold cyan]Key WPScan Flags:[/bold cyan]\n"
+            description += "[bold]--url:[/bold] Target WordPress site URL - Required\n"
+            description += "[bold]--enumerate/-e:[/bold] What to enumerate:\n"
+            description += "  • [cyan]u:[/cyan] Users (via /wp-json/wp/v2/users, author archives)\n"
+            description += "  • [cyan]p:[/cyan] Popular plugins (top 100, passive detection)\n"
+            description += "  • [cyan]vp:[/cyan] Vulnerable plugins only (requires API token)\n"
+            description += "  • [cyan]ap:[/cyan] All plugins (aggressive, 1000s of requests)\n"
+            description += "  • [cyan]t:[/cyan] Popular themes\n"
+            description += "  • [cyan]vt:[/cyan] Vulnerable themes\n"
+            description += "  • [cyan]at:[/cyan] All themes (very aggressive)\n"
+            description += "  • [cyan]cb:[/cyan] Config backups\n"
+            description += "  • [cyan]dbe:[/cyan] Database exports\n"
+            description += "[bold]--api-token:[/bold] WPScan Vulnerability Database API key.\n"
+            description += "  • Free tier: 50 requests/day\n"
+            description += "  • Shows CVEs, PoC exploits, CVSS scores\n"
+            description += "  • Get from https://wpscan.com/register\n"
+            description += "[bold]--plugins-detection:[/bold] Detection mode:\n"
+            description += "  • passive: Check readme.txt, styles (stealthy)\n"
+            description += "  • aggressive: Direct file requests (noisy)\n"
+            description += "[bold]--random-user-agent:[/bold] Rotate User-Agent to evade detection\n"
+            description += "[bold]--throttle:[/bold] Milliseconds between requests (stealth)\n"
+            description += "[bold]--max-threads:[/bold] Concurrent requests (default: 5)\n"
+            description += "[bold]-P/--passwords:[/bold] Password wordlist for brute-force\n"
+            description += "[bold]--stealthy:[/bold] Alias for passive + random-agent + throttle\n"
+            description += "[bold]-o/--output:[/bold] Save results (json, cli, cli-no-color)"
+            
+            impact = "[bold red]Real WPScan Attacks:[/bold red]\n" \
+                    "• [red]User Enumeration → Brute-Force:[/red] Find usernames (admin, editor), then password attack.\n" \
+                    "• [red]Plugin Exploits:[/red] Vulnerable plugins lead to:\n" \
+                    "  - Remote Code Execution (RCE): Upload backdoor, get shell\n" \
+                    "  - SQL Injection: Dump database (users, posts, private data)\n" \
+                    "  - Cross-Site Scripting (XSS): Steal admin cookies\n" \
+                    "  - File Upload: Upload malicious PHP files\n" \
+                    "• [yellow]Detection:[/yellow] Security plugins (Wordfence, Sucuri) detect WPScan patterns.\n" \
+                    "• [yellow]Logging:[/yellow] Every request logged. Aggressive scans = 1000s of entries.\n" \
+                    "• [red]Legal:[/red] Unauthorized WPScan = unauthorized access. Criminal.\n\n" \
+                    "[bold green]WordPress Security Hardening:[/bold green]\n" \
+                    "1. [green]Update Everything:[/green] WP core, plugins, themes. Enable auto-updates.\n" \
+                    "2. [green]Delete Unused:[/green] Remove inactive plugins/themes (still exploitable).\n" \
+                    "3. [green]Hide Version:[/green] Remove generator meta tags, disable readme.html.\n" \
+                    "4. [green]Security Plugins:[/green] Wordfence, iThemes Security, Sucuri.\n" \
+                    "5. [green]Limit Login Attempts:[/green] Lock accounts after failed logins.\n" \
+                    "6. [green]Strong Passwords:[/green] 14+ chars, MFA for admin accounts.\n" \
+                    "7. [green]Disable XML-RPC:[/green] Often exploited for brute-force amplification.\n" \
+                    "8. [green]File Permissions:[/green] wp-config.php = 440, wp-content/uploads = no PHP execution.\n" \
+                    "9. [green]WAF:[/green] Cloudflare, Sucuri CloudProxy.\n" \
+                    "10. [green]Backups:[/green] Daily backups to off-site location.\n\n" \
+                    "[bold cyan]Ethical Use:[/bold cyan] Your own WordPress sites, bug bounties (in scope), authorized pentests, CTF WordPress challenges."
+            
+            self._show_educational_info("WPScan WordPress Scanner", description, impact)
         
         self._log_simulation(' '.join(args))
         self._simulate_scan(config)

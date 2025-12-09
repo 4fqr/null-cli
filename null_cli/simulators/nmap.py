@@ -93,26 +93,57 @@ OUTPUT:
         
     def _show_nmap_education(self, scan_type: str, ports: str, targets: List[str]):
         """Show educational information about nmap"""
-        descriptions = {
-            "sS": "TCP SYN scan sends SYN packets without completing TCP handshake - stealthy but requires root",
-            "sT": "TCP Connect scan completes full TCP handshake - slower but works without privileges",
-            "sU": "UDP scan for UDP services - slower than TCP scans",
-            "sV": "Service version detection probes open ports to identify running services",
-            "sA": "TCP ACK scan used to map firewall rulesets",
-            "O": "OS detection uses TCP/IP stack fingerprinting to identify operating system",
+        # Build comprehensive description based on actual flags used
+        description_parts = []
+        
+        # Scan type explanations
+        scan_descriptions = {
+            "sS": "[bold]-sS (SYN Scan):[/bold] Stealthy half-open scan. Sends SYN, waits for SYN-ACK, then sends RST instead of ACK. Doesn't complete TCP handshake. Requires root/admin. Default and fastest scan. Hard to detect but logged by modern IDS.",
+            "sT": "[bold]-sT (Connect Scan):[/bold] Full TCP connection scan. Completes 3-way handshake. Works without privileges. Slower and noisier - every connection fully logged. Use when -sS unavailable.",
+            "sU": "[bold]-sU (UDP Scan):[/bold] Scans UDP ports (DNS:53, SNMP:161, DHCP:67). Slower than TCP - must wait for ICMP unreachable or timeout. Critical for finding DNS, SNMP vulnerabilities.",
+            "sV": "[bold]-sV (Version Detection):[/bold] Probes open ports with various protocol payloads to identify service/version. Essential for vulnerability assessment. Combines with any scan type.",
+            "sN": "[bold]-sN (Null Scan):[/bold] Stealthy scan sending TCP packets with no flags. Open ports don't respond; closed ports send RST. Bypasses some firewalls but unreliable on Windows.",
+            "sF": "[bold]-sF (FIN Scan):[/bold] Sends FIN packets. Similar to NULL scan - exploits TCP RFC loophole. Stealthy but doesn't work on Windows systems.",
+            "sX": "[bold]-sX (Xmas Scan):[/bold] Sets FIN, PSH, URG flags (packet 'lit up like Xmas tree'). Stealthy like FIN/NULL scans. Fails on Windows but effective on Unix/Linux.",
+            "sA": "[bold]-sA (ACK Scan):[/bold] Sends ACK packets to map firewall rulesets. Doesn't determine open/closed, but filtered/unfiltered. Used to detect firewall rules and packet filtering.",
         }
         
-        scan_desc = descriptions.get(scan_type, "Basic port scan to discover open ports")
+        description_parts.append(scan_descriptions.get(scan_type, "[bold]Basic Port Scan:[/bold] Discovers open/closed/filtered ports on target systems."))
         
-        impact = "Real nmap would send actual network packets to target hosts. This could:\n" \
-                "  • Trigger IDS/IPS alerts\n" \
-                "  • Be logged by firewalls\n" \
-                "  • Be considered unauthorized port scanning (illegal without permission)\n" \
-                "  • Impact network performance"
+        # Port specification
+        if ports != "1-1000":
+            if ports == "fast-100":
+                description_parts.append("\n[bold]-F (Fast Scan):[/bold] Scans only top 100 most common ports. Completes in seconds. Good for quick reconnaissance. Misses less common services.")
+            elif ports == "top-ports":
+                description_parts.append("\n[bold]--top-ports:[/bold] Scans most common ports by frequency. Customizable number. Balances speed vs coverage.")
+            else:
+                description_parts.append(f"\n[bold]-p {ports}:[/bold] Custom port range specified. Syntax: -p22,80,443 or -p1-65535 or -p U:53,T:21-25.")
+        
+        # Additional flag explanations
+        description_parts.append("\n\n[bold cyan]Key Nmap Flags:[/bold cyan]")
+        description_parts.append("\n[bold]-A (Aggressive):[/bold] Enables OS detection (-O), version detection (-sV), script scanning (-sC), and traceroute. Comprehensive but noisy.")
+        description_parts.append("\n[bold]-O (OS Detection):[/bold] TCP/IP fingerprinting to identify target OS. Analyzes TCP/IP stack responses. Requires root and at least one open/closed port.")
+        description_parts.append("\n[bold]-sC (Script Scan):[/bold] Runs default NSE scripts. Tests for vulnerabilities, gathers detailed info. Like running 100+ specialized tools.")
+        description_parts.append("\n[bold]--script=[/bold] Run specific NSE scripts: vuln (vulnerabilities), exploit, brute (password attacks), discovery, auth.")
+        description_parts.append("\n[bold]-T<0-5> (Timing):[/bold] T0=paranoid (IDS evasion), T1=sneaky, T2=polite, T3=normal, T4=aggressive, T5=insane. Higher=faster+noisier.")
+        description_parts.append("\n[bold]-Pn (No Ping):[/bold] Skip host discovery, assume all hosts up. Use when ICMP blocked. Slower but more thorough.")
+        description_parts.append("\n[bold]-n (No DNS):[/bold] Never resolve DNS. Faster scans. Use with IP ranges.")
+        description_parts.append("\n[bold]-v/-vv (Verbose):[/bold] Show progress and details. -vv = maximum verbosity. Essential for troubleshooting.")
+        description_parts.append("\n[bold]-oN/-oX/-oG:[/bold] Output formats: Normal (human), XML (parsing), Grepable (grep/awk). Always save results.")
+        
+        full_description = ''.join(description_parts)
+        
+        impact = "[bold red]Real Nmap Impact:[/bold red]\n" \
+                "• [red]Legal:[/red] Port scanning without authorization is ILLEGAL in most jurisdictions. Can result in criminal charges.\n" \
+                "• [yellow]Detection:[/yellow] Modern IDS/IPS (Snort, Suricata) detect all scan types. Logged with source IP, timestamp, flags.\n" \
+                "• [yellow]Firewalls:[/yellow] Stateful firewalls rate-limit and drop suspicious scans. May blacklist your IP.\n" \
+                "• [yellow]Network Impact:[/yellow] -T5 scans can saturate networks, causing DoS. Use -T2 or -T3.\n" \
+                "• [cyan]Defense:[/cyan] Use rate limiting, host-based firewalls, IDS, and network segmentation.\n\n" \
+                "[bold green]When Legal:[/bold green] Authorized pentesting, bug bounties, your own infrastructure, lab environments."
         
         self._show_educational_info(
-            f"nmap -{scan_type} scan",
-            scan_desc,
+            f"Nmap Network Scanner",
+            full_description,
             impact
         )
         

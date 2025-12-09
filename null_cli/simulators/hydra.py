@@ -113,39 +113,61 @@ class HydraSimulator(ToolSimulator):
     
     def _show_hydra_education(self, config: Dict):
         """Show educational information about Hydra attacks"""
+        description_parts = []
         service = config['service'].upper()
         
-        description = f"Hydra is a parallelized login cracker which supports numerous protocols. " \
-                     f"It performs brute-force attacks against {service} authentication by trying " \
-                     f"multiple username/password combinations rapidly.\n\n" \
-                     f"[bold]How it works:[/bold]\n" \
-                     f"• Sends login attempts to the {service} service\n" \
-                     f"• Uses multiple threads ({config['threads']}) to parallelize attempts\n" \
-                     f"• Analyzes responses to determine successful authentication\n" \
-                     f"• Can test thousands of combinations per minute"
+        # Username/password mode
+        if config['username']:
+            description_parts.append("[bold]-l (Single User):[/bold] Tests one username with password list. Faster when targeting specific account.")
+        elif config['username_list']:
+            description_parts.append("[bold]-L (User List):[/bold] Tests multiple usernames. Hydra tries every user+password combination. Exponentially longer.")
         
-        impact = f"[bold red]Real Hydra attacks would:[/bold red]\n" \
-                f"• Generate massive authentication logs on target system\n" \
-                f"• Trigger account lockouts and security alerts\n" \
-                f"• Consume significant network bandwidth\n" \
-                f"• Cause service degradation or denial of service\n" \
-                f"• Be detected by intrusion detection systems immediately\n" \
-                f"• Result in IP blocking, firewall rules, and incident response\n" \
-                f"• Constitute unauthorized access attempt (criminal offense)\n" \
-                f"• Lead to immediate legal action and prosecution\n\n" \
-                f"[bold yellow]Defense mechanisms:[/bold yellow]\n" \
-                f"• Account lockout policies after N failed attempts\n" \
-                f"• Rate limiting and connection throttling\n" \
-                f"• Multi-factor authentication (MFA/2FA)\n" \
-                f"• IP-based blocking and geo-filtering\n" \
-                f"• CAPTCHA after failed attempts\n" \
-                f"• Strong password policies"
+        if config['password']:
+            description_parts.append("\n[bold]-p (Single Password):[/bold] Tests one password across all users. Good for common passwords (admin, password123).")
+        elif config['password_list']:
+            description_parts.append("\n[bold]-P (Password List):[/bold] Dictionary attack using wordlist (rockyou.txt, etc). Can test millions of passwords.")
         
-        self._show_educational_info(
-            f"Hydra Brute-Force Attack on {service}",
-            description,
-            impact
-        )
+        # Threading
+        description_parts.append(f"\n\n[bold]-t {config['threads']} (Threads):[/bold] Parallel login attempts. More threads = faster but noisier. Default 16. Max depends on service.")
+        
+        # Service-specific
+        description_parts.append(f"\n[bold]Service ({service}):[/bold] Protocol-specific modules. Hydra supports 50+ protocols:")
+        description_parts.append("\n  • [cyan]SSH (22):[/cyan] Slow but common. Rate-limited by sshd. Use -t 4 max.")
+        description_parts.append("\n  • [cyan]FTP (21):[/cyan] Fast, often anonymous. Check anonymous login first.")
+        description_parts.append("\n  • [cyan]HTTP/HTTPS:[/cyan] Web forms, basic auth. Use http-get, http-post-form modules.")
+        description_parts.append("\n  • [cyan]SMB (445):[/cyan] Windows shares. Targets Active Directory. Account lockout risk HIGH.")
+        description_parts.append("\n  • [cyan]RDP (3389):[/cyan] Windows Remote Desktop. Slow, heavily logged. Use cautiously.")
+        description_parts.append("\n  • [cyan]MySQL/Postgres:[/cyan] Database brute-force. Check for rate limiting.")
+        
+        # Additional flags
+        description_parts.append("\n\n[bold cyan]Important Hydra Flags:[/bold cyan]")
+        description_parts.append("\n[bold]-s <port>:[/bold] Custom port when service runs non-standard port (SSH on 2222).")
+        description_parts.append("\n[bold]-S (SSL):[/bold] Force SSL/TLS connection. Required for HTTPS, FTPS, encrypted services.")
+        description_parts.append("\n[bold]-v/-V (Verbose):[/bold] -v shows attempts, -V shows login+pass tested. Essential for debugging.")
+        description_parts.append("\n[bold]-f (Exit on First):[/bold] Stop after first valid credential found. Saves time.")
+        description_parts.append("\n[bold]-w (Timeout):[/bold] Connection timeout in seconds. Increase for slow/remote targets.")
+        description_parts.append("\n[bold]-o <file>:[/bold] Output results to file. Always save successful creds.")
+        description_parts.append("\n[bold]-e nsr:[/bold] Test (n)ull password, (s)ame as login, (r)everse login. Finds lazy admins.")
+        description_parts.append("\n[bold]-M <targets>:[/bold] Multiple target IPs from file. Parallel host attacks.")
+        
+        full_description = ''.join(description_parts)
+        
+        impact = "[bold red]Real Hydra Attacks Would:[/bold red]\n" \
+                "• [red]Trigger Account Lockouts:[/red] Most systems lock accounts after 3-5 failed attempts. Can DoS legitimate users.\n" \
+                "• [red]Generate Massive Logs:[/red] Every attempt logged with timestamp, IP, username. Forensically obvious.\n" \
+                "• [red]Trigger IPS/IDS:[/red] Fail2ban, OSSEC auto-block IPs after failed attempts. Permanent blacklisting possible.\n" \
+                "• [yellow]Legal Consequences:[/yellow] Unauthorized access attempts = felony (CFAA, Computer Misuse Act). Criminal prosecution.\n" \
+                "• [yellow]Success Rate:[/yellow] ~1-5% against hardened systems. 30-50% against weak passwords (password123, company name).\n\n" \
+                "[bold green]Defenses:[/bold green]\n" \
+                "• Account lockout policies (5 attempts = 30 min lockout)\n" \
+                "• Rate limiting (max 1 attempt/second per IP)\n" \
+                "• Multi-factor authentication (MFA) - renders brute-force useless\n" \
+                "• Strong password policy (12+ chars, complexity)\n" \
+                "• Fail2ban, OSSEC, IDS monitoring\n" \
+                "• IP whitelisting for admin accounts\n\n" \
+                "[bold cyan]Ethical Use:[/bold cyan] Authorized pentesting, your own systems, password audit with permission, CTF competitions."
+        
+        self._show_educational_info(f"Hydra Password Brute-Force Tool ({service})", full_description, impact)
     
     def _simulate_attack(self, config: Dict):
         """Simulate a Hydra password cracking attack"""
