@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "null-cli"
+version = "1.0.0"
+description = "🎯 Safely simulate Kali Linux security tools without any real network operations - Learn offensive security risk-free"
+authors = [{name = "Null CLI Contributors"}]
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+keywords = ["security", "educational", "kali-linux", "pentesting", "simulation", "cybersecurity", "nmap", "metasploit"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education",
+    "Topic :: Security",
+]
+
+dependencies = [
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    "pyfiglet>=0.8.0",
+    "faker>=20.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "black>=23.0.0",
+    "mypy>=1.0.0",
+]
+
+[project.scripts]
+null-cli = "null_cli.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/4fqr/null-cli"
+Issues = "https://github.com/4fqr/null-cli/issues"
+
+[tool.setuptools]
+packages = ["null_cli", "null_cli.simulators", "null_cli.data"]
+
+[tool.setuptools.package-data]
+null_cli = ["data/*.json"]
